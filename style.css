@@ -195,11 +195,18 @@ html, body {
   margin: 10px 0 0;
   opacity: 0.8;
 }
+.birthday-note {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 28px 0 0;
+}
 .footer-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 56px;
+  margin-top: 72px;
   gap: 10px;
 }
 .footer-link {
