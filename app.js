@@ -1,4 +1,16 @@
 // ===== Config =====
+// Per-deployment settings. This app is deployed more than once (the original
+// TLV Spots copy, plus this personalized copy for Keren) from the same code —
+// this block is the ONLY thing that differs between deployments. Every other
+// fix or feature in this file applies to all deployments with one edit.
+const APP_NAME = "Keren's TLV Spots";
+// Fetched live from DJ's original repo instead of a local copy, so adding a
+// spot to either copy's places.json keeps both apps in sync automatically —
+// no manual re-copying needed. If DJ's repo/branch name ever changes, update
+// this URL to match.
+const PLACES_SOURCE = "https://raw.githubusercontent.com/jeff99cold/TLV-Spots/main/places.json";
+const SHARE_URL = "https://tinyurl.com/keren-tlv-spots";
+
 // Minimal line-icon paths (24x24 viewBox) per category — rendered with currentColor
 // so they pick up the chip/pin/theme color automatically.
 const CATEGORY_ICONS = {
@@ -105,7 +117,7 @@ function escapeHtml(str) {
 
 // ===== Load data =====
 async function loadPlaces() {
-  const res = await fetch("places.json");
+  const res = await fetch(PLACES_SOURCE);
   ALL_PLACES = await res.json();
 }
 
@@ -428,15 +440,15 @@ async function sharePlace(p) {
 async function shareApp() {
   // A short redirect link instead of the raw GitHub Pages URL, so the
   // username/host isn't visible when someone shares the app.
-  const appUrl = "https://tinyurl.com/tlv-spots-app";
-  const shareText = "שששש... לא מספרים על TLV Spots";
+  const appUrl = SHARE_URL;
+  const shareText = `שששש... לא מספרים על ${APP_NAME}`;
 
   if (navigator.share) {
     try {
       // Pass the URL only via the dedicated `url` field, not inside `text` too —
       // WhatsApp (and some other share targets) append the url field on its own
       // line, so including it in text as well made the link show up twice.
-      await navigator.share({ title: "TLV Spots", text: shareText, url: appUrl });
+      await navigator.share({ title: APP_NAME, text: shareText, url: appUrl });
     } catch (e) {
       // user cancelled the share sheet — nothing to do
     }
@@ -472,8 +484,8 @@ function closeDetail() {
 
 // ===== Suggest a new spot =====
 // Submissions are relayed through Formspree (a free static-site form-to-email
-// service) since this app has no backend of its own. Replace the placeholder
-// below with your real Formspree endpoint (formspree.io) once you've created one.
+// service) since this app has no backend of its own. Both copies share the
+// same Formspree form, so suggestions from either app land in DJ's inbox.
 const SPOT_SUBMIT_ENDPOINT = "https://formspree.io/f/xrenvqyz";
 
 function openAddSpotScreen() {
@@ -557,10 +569,10 @@ function scrubUntrustedUrl(raw, rawUrl, trusted) {
 }
 
 // ===== Receiving a share from the Google Maps app (no copy/paste needed) =====
-// TLV Spots is registered as a Web Share Target in manifest.json. On Android,
+// This app is registered as a Web Share Target in manifest.json. On Android,
 // once the app is installed to the home screen, it shows up as an option in
 // the native share sheet — so instead of copying a link out of Google Maps,
-// the user can just tap Share on a place there and pick "TLV Spots" directly.
+// the user can just tap Share on a place there and pick this app directly.
 // The shared data (title/text/url) arrives as query params on page load.
 // (This isn't supported by iOS Safari — there's no PWA share-target API on
 // iOS — so the paste-box flow above stays in place as a fallback there.)
@@ -624,7 +636,7 @@ async function submitNewSpot() {
   formData.append("name_guess", name);
   formData.append("maps_url", url);
   formData.append("raw_paste", scrubUntrustedUrl(raw, rawUrl, trusted));
-  formData.append("_subject", `new spot for spots - ${name}`);
+  formData.append("_subject", `new spot for ${APP_NAME} - ${name}`);
   // Keep the "message" field free of a raw link — spam filters (including
   // Formspree's Formshield) score plain-text URLs in the message body highly,
   // which caused real submissions to land in Spam instead of the inbox. The

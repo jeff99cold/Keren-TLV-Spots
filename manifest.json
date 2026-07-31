@@ -1,6 +1,6 @@
 {
-  "name": "TLV Spots",
-  "short_name": "TLV Spots",
+  "name": "Keren's TLV Spots",
+  "short_name": "Keren's Spots",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
