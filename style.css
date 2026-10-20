@@ -629,3 +629,12 @@ html, body {
 .info-status.is-open{color:#22c55e}
 .info-status.is-closed{color:#ef4444}
 .info-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;margin-inline-end:4px}
+.sheet-meta-row{flex-wrap:nowrap;gap:6px;align-items:center}
+.sheet-meta-row .meta-pill{padding:6px 9px;white-space:nowrap;flex:none}
+.info-hours{gap:4px;font-size:.76rem;min-width:0}
+.info-status::before{width:6px;height:6px;margin-inline-end:3px}
+.info-hours{font-size:.85rem}
+.sheet-title-row{display:flex;align-items:center;gap:10px}
+.sheet-title-row .info-status{flex:1;justify-content:center;display:inline-flex;align-items:center;font-size:.9rem}
+.sheet-title-row{position:relative}
+.sheet-title-row .info-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:none;pointer-events:none;font-size:.95rem}
