@@ -620,3 +620,6 @@ html, body {
 .info-ico{vertical-align:-2px;margin-inline-end:4px}
 .info-link{display:inline-flex;align-items:center}
 .info-hours .info-ico{margin-inline-end:0;margin-inline-start:4px}
+.info-link{color:var(--ink)}
+.info-hours{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-inline-start:0;white-space:nowrap;font-size:.8rem;color:var(--ink)}
+.info-hours .info-ico{margin:0;flex:none;vertical-align:baseline}
