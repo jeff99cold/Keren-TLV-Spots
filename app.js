@@ -366,15 +366,21 @@ function isOpenNow(p) {
   for (const [o, c] of ranges(yest)) { if (c <= o && n < c) return true; }
   return false;
 }
+function statusHtml(p) {
+  if (!p.hours) return "";
+  const open = isOpenNow(p);
+  return open === null ? "" : `<span class="info-status ${open ? "is-open" : "is-closed"}">${open ? "פתוח" : "סגור"}</span>`;
+}
 function hoursHtml(p) {
   if (!p.hours) return "";
   const i = new Date().getDay(), v = p.hours[DAY_KEYS[i]];
   if (!v) return "";
   const fmt = t => t.replace(/^0/, "").replace(/^24:00$/, "0:00");
-  const open = isOpenNow(p);
-  const status = open === null ? "" : `<span class="info-status ${open ? "is-open" : "is-closed"}">${open ? "פתוח" : "סגור"}</span>`;
-  const times = v === "closed" ? "" : `<span dir="ltr">${v.split(",").map(r => r.split("-").map(fmt).join(" - ")).join(" · ")}</span>`;
-  return `<span class="info-hours">${status}<span>${HE_DAYS[i]}</span>${times}${CLOCK_SVG}</span>`;
+  const times = v === "closed" ? "" : `<span dir="ltr">${v.split(",").map(r => r.split("-").map(fmt).join("–")).join(" · ")}</span>`;
+  return `<span class="info-hours"><span>${HE_DAYS[i]}</span>${times}${CLOCK_SVG}</span>`;
+}
+function shortAddress(a) {
+  return (a || "").replace(/תל[ -]אביב(-יפו)?/g, 'ת"א');
 }
 function phoneHtml(p) {
   return p.phone ? `<a class="info-link" href="tel:${p.phone.replace(/[^\d+]/g, "")}" dir="ltr">${PHONE_SVG} ${escapeHtml(p.phone)}</a>` : "";
@@ -413,10 +419,10 @@ function openDetail(p) {
 
   const html = `
     <div class="sheet-title-row">
-      <h2 class="sheet-title">${escapeHtml(p.name)}</h2>
+      <h2 class="sheet-title">${escapeHtml(p.name)}</h2>${statusHtml(p)}
     </div>
     <div class="sheet-row"><div class="sheet-cat"><span class="cat-icon" style="color:${categoryColor(p.category)}">${categoryIconSvg(p.category, 16)}</span> ${escapeHtml(p.category)}</div>${phoneHtml(p)}</div>
-    <div class="sheet-row sheet-address"><span>${escapeHtml(p.address || "")}</span>${websiteHtml(p)}</div>
+    <div class="sheet-row sheet-address"><span>${escapeHtml(shortAddress(p.address))}</span>${websiteHtml(p)}</div>
     <div class="sheet-meta-row">
       <div class="meta-pill distance">📍 ${dist}</div>
       <button id="sheet-share-btn-el" class="meta-pill share-pill" aria-label="שיתוף">
@@ -426,8 +432,8 @@ function openDetail(p) {
       ${hoursHtml(p)}
     </div>
     ${ratingsHtml ? `<div class="ratings-grid">${ratingsHtml}</div>` : ""}
-    ${safeLink ? `<a class="sheet-link-btn" href="${safeLink}" target="_blank" rel="noopener">חַבֵּר</a>` : ""}
-    <a class="sheet-nav-btn" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}" target="_blank" rel="noopener">יָאלללָה</a>
+    ${safeLink ? `<a class="sheet-link-btn" href="${safeLink}" target="_blank" rel="noopener">תְחַבֵּר</a>` : ""}
+    <a class="sheet-nav-btn" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}" target="_blank" rel="noopener">יָאלָלָלָה</a>
   `;
   document.getElementById("sheet-content").innerHTML = html;
   document.getElementById("detail-sheet").classList.remove("hidden");
