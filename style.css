@@ -623,3 +623,9 @@ html, body {
 .info-link{color:var(--ink)}
 .info-hours{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-inline-start:0;white-space:nowrap;font-size:.8rem;color:var(--ink)}
 .info-hours .info-ico{margin:0;flex:none;vertical-align:baseline}
+.info-hours{flex:none;margin-inline-start:auto;gap:6px;font-size:.85rem;color:var(--ink)}
+.info-hours>*{display:inline-flex;align-items:center;line-height:1}
+.info-status{font-weight:700}
+.info-status.is-open{color:#22c55e}
+.info-status.is-closed{color:#ef4444}
+.info-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;margin-inline-end:4px}

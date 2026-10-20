@@ -354,26 +354,34 @@ const RATING_BADGES = {
 const HE_DAYS = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
 const DAY_KEYS = ["sun","mon","tue","wed","thu","fri","sat"];
 const PHONE_SVG = `<svg class="info-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>`;
-const CLOCK_SVG = `<svg class="info-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
-function todayHoursText(p) {
+const CLOCK_SVG = `<svg class="info-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+const GLOBE_SVG = `<svg class="info-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></svg>`;
+const toMin = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+function isOpenNow(p) {
+  const now = new Date(), i = now.getDay(), n = now.getHours() * 60 + now.getMinutes();
+  const today = p.hours[DAY_KEYS[i]], yest = p.hours[DAY_KEYS[(i + 6) % 7]];
+  if (!today) return null;
+  const ranges = v => (!v || v === "closed") ? [] : v.split(",").map(r => r.split("-").map(toMin));
+  for (const [o, c] of ranges(today)) { if (o <= n && n < (c <= o ? c + 1440 : c)) return true; }
+  for (const [o, c] of ranges(yest)) { if (c <= o && n < c) return true; }
+  return false;
+}
+function hoursHtml(p) {
   if (!p.hours) return "";
-  const i = new Date().getDay();
-  const v = p.hours[DAY_KEYS[i]];
+  const i = new Date().getDay(), v = p.hours[DAY_KEYS[i]];
   if (!v) return "";
   const fmt = t => t.replace(/^0/, "").replace(/^24:00$/, "0:00");
-  const txt = v === "closed" ? "סגור" : `<span dir="ltr">${v.split(",").map(r => r.split("-").map(fmt).join(" - ")).join(" · ")}</span>`;
-  return HE_DAYS[i] + " " + txt;
+  const open = isOpenNow(p);
+  const status = open === null ? "" : `<span class="info-status ${open ? "is-open" : "is-closed"}">${open ? "פתוח" : "סגור"}</span>`;
+  const times = v === "closed" ? "" : `<span dir="ltr">${v.split(",").map(r => r.split("-").map(fmt).join(" - ")).join(" · ")}</span>`;
+  return `<span class="info-hours">${status}<span>${HE_DAYS[i]}</span>${times}${CLOCK_SVG}</span>`;
 }
 function phoneHtml(p) {
   return p.phone ? `<a class="info-link" href="tel:${p.phone.replace(/[^\d+]/g, "")}" dir="ltr">${PHONE_SVG} ${escapeHtml(p.phone)}</a>` : "";
 }
 function websiteHtml(p) {
   const u = p.website ? normalizeUrl(p.website) : null;
-  return u ? `<a class="info-link" href="${u}" target="_blank" rel="noopener" dir="ltr">🌐 ${escapeHtml(p.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a>` : "";
-}
-function hoursHtml(p) {
-  const ht = todayHoursText(p);
-  return ht ? `<span class="info-hours">${ht}${CLOCK_SVG}</span>` : "";
+  return u ? `<a class="info-link" href="${u}" target="_blank" rel="noopener" dir="ltr">${GLOBE_SVG} ${escapeHtml(p.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))}</a>` : "";
 }
 
 function ratingCard(key, value, count) {
