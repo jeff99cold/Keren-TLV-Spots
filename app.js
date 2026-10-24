@@ -51,6 +51,25 @@ let userLatLng = null;
 let radiusKm = 0.5;
 let map, userMarker, radiusCircle;
 let markers = []; // {marker, place}
+// "Show the top" filter: per category inside the radius keep the best 25%
+// (rounded up) by score, never fewer than 3 or more than 6; categories with
+// 3 or fewer places inside the radius are shown in full.
+let topOnly = false;
+let topAvailable = false;
+const TOP_SHARE = 0.25, TOP_MIN = 3, TOP_MAX = 6;
+function topCountFor(n) {
+  return n <= TOP_MIN ? n : Math.min(TOP_MAX, Math.max(TOP_MIN, Math.ceil(n * TOP_SHARE)));
+}
+function pickTop(list) {
+  const byCat = {};
+  list.forEach(p => (byCat[p.category] = byCat[p.category] || []).push(p));
+  const keep = new Set();
+  Object.values(byCat).forEach(g => {
+    g.slice().sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
+      .slice(0, topCountFor(g.length)).forEach(p => keep.add(p));
+  });
+  return list.filter(p => keep.has(p));
+}
 
 // ===== Utils =====
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -308,13 +327,17 @@ function renderMarkers() {
 
   if (!userLatLng) return;
 
-  const matches = ALL_PLACES.filter(p => {
+  let matches = ALL_PLACES.filter(p => {
     if (!p.lat || !p.lon) return false;
     if (selectedCategories.size && !selectedCategories.has(p.category)) return false;
     const d = haversineKm(userLatLng[0], userLatLng[1], p.lat, p.lon);
     p._distance = d;
     return d <= radiusKm;
   }).sort((a, b) => a._distance - b._distance);
+
+  const allMatches = matches;
+  topAvailable = pickTop(allMatches).length < allMatches.length;
+  if (topOnly && topAvailable) matches = pickTop(allMatches);
 
   const displayPositions = declutterPositions(matches);
 
@@ -330,8 +353,17 @@ function renderMarkers() {
     markers.push({ marker, place: p });
   });
 
-  document.getElementById("result-count").textContent =
-    matches.length ? `${matches.length} מקומות בסביבה` : "אין מקומות ברדיוס הזה";
+  const countEl = document.getElementById("result-count");
+  const topActive = topOnly && topAvailable;
+  countEl.classList.toggle("pill-btn", topAvailable || topOnly);
+  countEl.classList.toggle("on", topActive);
+  if (!matches.length) {
+    countEl.textContent = "אין מקומות ברדיוס הזה";
+  } else if (topActive) {
+    countEl.textContent = `הטופ בלבד · ${matches.length} מתוך ${allMatches.length} ✕`;
+  } else {
+    countEl.innerHTML = `${matches.length} מקומות בסביבה` + (topAvailable ? ` · <b class="pill-hint">תראה ת'טופ</b>` : "");
+  }
 
   // total geocoded places available (for status when few results)
   const totalMatchingCategory = ALL_PLACES.filter(p => selectedCategories.has(p.category)).length;
@@ -725,6 +757,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadPlaces();
   buildCategoryGrid();
   handleIncomingShare();
+
+  const countPill = document.getElementById("result-count");
+  countPill.setAttribute("role", "button");
+  countPill.tabIndex = 0;
+  const toggleTop = () => {
+    if (!topAvailable && !topOnly) return;
+    topOnly = !topOnly;
+    if (map && userLatLng) renderMarkers();
+  };
+  countPill.addEventListener("click", toggleTop);
+  countPill.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleTop(); }
+  });
 
   document.getElementById("find-btn").addEventListener("click", () => {
     // If we already have a location (real GPS or a manually-moved pin from a

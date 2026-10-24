@@ -642,3 +642,6 @@ html, body {
 .sheet-status-row{display:flex;justify-content:center;margin:-4px 0 8px}
 .sheet-status-row .info-status{font-size:.95rem}
 #detail-sheet .sheet-close{width:42px;height:42px;font-size:1.25rem;top:8px;left:12px}
+.pill.pill-btn { cursor: pointer; }
+.pill-hint { color: #f5b84a; font-weight: 500; }
+.pill.on { background: #f59e0b; color: #1f1b16; font-weight: 500; }
